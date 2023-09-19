@@ -1,3 +1,5 @@
+import { Secret } from "jsonwebtoken";
+
 export {};
 
 declare global {
@@ -8,6 +10,7 @@ declare global {
       DB_HOST: string;
       DB_PASSWORD: string;
       DATABASE: string;
+      SECRETKEY: Secret;
       ENV: 'test' | 'dev' | 'prod';
     }
   }

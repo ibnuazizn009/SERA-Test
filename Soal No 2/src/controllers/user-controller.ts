@@ -1,9 +1,61 @@
 import { Request, Response, NextFunction } from "express";
 import bcrypt from 'bcrypt';
+import jwt, {Secret} from 'jsonwebtoken';
 import User from "../models/user_model";;
 import makeid from "../config/make_id";
+import dotenv from 'dotenv';
+dotenv.config();
 
 export = {
+    userSignin: async(req: Request, res: Response, next: NextFunction) => {
+        try {
+            const {username, password} = req.body
+            const users_data = await User.findAll({
+                where:{
+                    Username: username
+                }
+            })
+
+            if(!users_data.length){
+                return res.status(404).json({
+                    status: false,
+                    message: 'Username or password incorrect!'
+                })
+            }
+
+            const validPassword = bcrypt.compareSync(password, users_data[0].dataValues.Password);
+            if(!validPassword){
+                return res.status(401).json({
+                    success: false,
+                    message: 'Invalid password',
+                    data: {}
+                });
+            }
+
+            const token = 'Bearer ' + jwt.sign({
+                userId: users_data[0].dataValues.id,
+            }, process.env.SECRETKEY as string, {
+                expiresIn: '2d'
+            });
+
+            res.status(200).json({
+                success: true,
+                message: 'Successfully login',
+                data: {
+                    user: {
+                        "userId": users_data[0].dataValues.id,
+                        "username": users_data[0].dataValues.Username
+                    },
+                    accessToken: token
+                }
+            });
+
+        } catch (error) {
+            console.log(`error while login`, error);
+            res.status(400).json(error); 
+        }
+    },
+
     getUser: async(req: Request, res: Response, next: NextFunction) => {
         try {
             const users = await User.findAll();
@@ -54,14 +106,12 @@ export = {
             const usersdata = await User.findAll();
 
             if(!usersdata.length){
-                if(username.length > 12){
-                    return res.status(400).json({
-                        status: true,
-                        message: 'Username must be 12 or less'
-                    })
-                }
-
-                console.log(username.length);
+                // if(username.length > 12){
+                //     return res.status(400).json({
+                //         status: true,
+                //         message: 'Username must be 12 or less'
+                //     })
+                // }
                 bcrypt.hash(password, 10, async (err, hash) => {
                     if(err){
                         return res.status(500).json({
@@ -93,12 +143,12 @@ export = {
                     }
                 })
             }else{
-                if(username.length > 12){
-                    return res.status(400).json({
-                        status: true,
-                        message: 'Username must be 12 or less'
-                    })
-                }
+                // if(username.length > 12){
+                //     return res.status(400).json({
+                //         status: true,
+                //         message: 'Username must be 12 or less'
+                //     })
+                // }
 
                 if(usersdata[0].dataValues.Username === username){
                     return res.status(404).json({
@@ -221,7 +271,7 @@ export = {
                     message: `Can't delete ative account`
                 })
             }
-            
+
             const result = await User.destroy({
                 where:{
                     id
