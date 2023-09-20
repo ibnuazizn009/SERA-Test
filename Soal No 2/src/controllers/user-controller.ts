@@ -35,9 +35,17 @@ export = {
             const token = 'Bearer ' + jwt.sign({
                 userId: users_data[0].dataValues.id,
             }, process.env.SECRETKEY as string, {
-                expiresIn: '2d'
+                expiresIn: '7d'
             });
 
+            let token_split = token.split(' ')[1];
+            await User.update({
+                token: token_split
+            }, {
+                where: {
+                    id: users_data[0].dataValues.id,
+                }
+            })
             res.status(200).json({
                 success: true,
                 message: 'Successfully login',
@@ -60,7 +68,7 @@ export = {
         try {
             const users = await User.findAll();
             if(!users.length){
-                res.status(404).json({
+                return res.status(404).json({
                     status: true,
                     message: 'Sorry, data not found',
                     data: {}
@@ -83,7 +91,7 @@ export = {
             const users = await User.findByPk(id);
             
             if(!users){
-                res.status(404).json({
+                return res.status(404).json({
                     status: true,
                     message: 'Sorry, data not found',
                     data: {}
@@ -106,12 +114,7 @@ export = {
             const usersdata = await User.findAll();
 
             if(!usersdata.length){
-                // if(username.length > 12){
-                //     return res.status(400).json({
-                //         status: true,
-                //         message: 'Username must be 12 or less'
-                //     })
-                // }
+              
                 bcrypt.hash(password, 10, async (err, hash) => {
                     if(err){
                         return res.status(500).json({
@@ -135,7 +138,7 @@ export = {
                         }
     
                         const result = await User.create(data);
-                        return res.status(200).json({
+                        return res.status(201).json({
                             status: true,
                             message: 'Created successfully',
                             data: result
@@ -143,12 +146,6 @@ export = {
                     }
                 })
             }else{
-                // if(username.length > 12){
-                //     return res.status(400).json({
-                //         status: true,
-                //         message: 'Username must be 12 or less'
-                //     })
-                // }
 
                 if(usersdata[0].dataValues.Username === username){
                     return res.status(404).json({
@@ -202,13 +199,6 @@ export = {
 
             const users = await User.findByPk(id);
 
-            if(username.length > 12){
-                return res.status(400).json({
-                    status: true,
-                    message: 'Username must be 12 or less'
-                })
-            }
-
             if(!users){
                 return res.status(404).json({
                     status: true,
@@ -216,13 +206,6 @@ export = {
                     data: {}
                 })
             }else{
-
-                if(username.length > 12){
-                    return res.status(400).json({
-                        status: true,
-                        message: 'Username must be 12 or less'
-                    })
-                }
 
                 bcrypt.hash(password, 10, async (err, hash) => {
                     if(err){
@@ -241,7 +224,7 @@ export = {
                         if ( Number(result) === 1 ) {
                             return res.status(200).json({
                                 status: true,
-                                message: 'Update successfully',
+                                message: 'Update successfully!!',
                                 data: result
                             })
                         } else {

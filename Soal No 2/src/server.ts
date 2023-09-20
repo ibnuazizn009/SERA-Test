@@ -34,3 +34,5 @@ const errorHandler: ErrorRequestHandler = (err, req, res, next) =>{
 app.use(errorHandler);
 
 const server: Server = app.listen(3000, () => console.log("🚀  Server running on port 3000"));
+
+export default app;

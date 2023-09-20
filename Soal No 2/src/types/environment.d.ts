@@ -11,7 +11,7 @@ declare global {
       DB_PASSWORD: string;
       DATABASE: string;
       SECRETKEY: Secret;
-      ENV: 'test' | 'dev' | 'prod';
+      NODE_ENV: 'test' | 'dev' | 'prod';
     }
   }
 }
